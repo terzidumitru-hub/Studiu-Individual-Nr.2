@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator de Albume Foto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7, #ec4899);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --input-bg: rgba(15, 23, 42, 0.6);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 10px 0 20px 0;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 300px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            padding: 18px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        input[type="file"] {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: var(--input-bg);
+            border: 1px dashed var(--card-border);
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        input[type="file"]::-webkit-file-upload-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 6px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        button {
+            background: var(--accent-gradient);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.45);
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border: 1px solid var(--card-border);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: none;
+        }
+
+        .filter-btn.active {
+            background: var(--accent-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            flex: 1;
+            align-content: start;
+        }
+
+        .photo-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
+            height: 220px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .photo-card:hover img {
+            transform: scale(1.08);
+        }
+
+        .photo-card .album-badge {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.9), transparent);
+            color: var(--text-main);
+            padding: 20px 10px 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+
+        /* Lightbox Modal */
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(10px);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 85vh;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            color: var(--text-muted);
+            font-size: 36px;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            color: var(--text-main);
+        }
+
+        #lightboxCaption {
+            color: var(--text-main);
+            margin-top: 16px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>✨ Generator de Albume Foto</h1>
+        <p>Organizează-ți amintirile într-o galerie modernă</p>
+    </header>
+
+    <div class="container">
+        <aside class="sidebar">
+            <section class="card">
+                <h2>📁 1. Album Nou</h2>
+                <form id="albumForm">
+                    <input type="text" id="albumTitle" placeholder="Titlul albumului (ex: Vacanță)" required>
+                    <textarea id="albumDesc" placeholder="Descriere scurtă..." rows="2"></textarea>
+                    <button type="submit">Creează Album</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>🖼️ 2. Adaugă Poze</h2>
+                <form id="photoForm">
+                    <select id="photoAlbumSelect" required>
+                        <option value="">Selectează albumul...</option>
+                    </select>
+                    <input type="file" id="photoInput" accept="image/*" multiple required>
+                    <button type="submit">Încarcă Fotografii</button>
+                </form>
+            </section>
+
+            <section class="card">
+                <h2>🔍 3. Filtrare</h2>
+                <div id="albumFilters" class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Toate pozele</button>
+                </div>
+            </section>
+        </aside>
+
+        <main class="main-content">
+            <div class="main-header">
+                <h2 id="galleryTitle">Toate Fotografiile</h2>
+            </div>
+            <div id="photoGrid" class="photo-grid"></div>
+        </main>
+    </div>
+
+    <div id="lightbox" class="lightbox">
+        <span class="close-btn">&times;</span>
+        <img class="lightbox-content" id="lightboxImg">
+        <div id="lightboxCaption"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const albums = [{ id: "album-demo", title: "Vacanță la Mare", desc: "Poze de test" }];
+            const photos = [
+                { id: "p1", albumId: "album-demo", src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600" },
+                { id: "p2", albumId: "album-demo", src: "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600" }
+            ];
+
+            const albumForm = document.getElementById("albumForm");
+            const photoForm = document.getElementById("photoForm");
+            const albumTitleInput = document.getElementById("albumTitle");
+            const albumDescInput = document.getElementById("albumDesc");
+            const photoAlbumSelect = document.getElementById("photoAlbumSelect");
+            const photoInput = document.getElementById("photoInput");
+            const albumFilters = document.getElementById("albumFilters");
+            const photoGrid = document.getElementById("photoGrid");
+            const galleryTitle = document.getElementById("galleryTitle");
+
+            const lightbox = document.getElementById("lightbox");
+            const lightboxImg = document.getElementById("lightboxImg");
+            const lightboxCaption = document.getElementById("lightboxCaption");
+            const closeBtn = document.querySelector(".close-btn");
+
+            function updateAlbumSelect() {
+                photoAlbumSelect.innerHTML = '<option value="">Selectează albumul...</option>';
+                albums.forEach(album => {
+                    const option = document.createElement("option");
+                    option.value = album.id;
+                    option.textContent = album.title;
+                    photoAlbumSelect.appendChild(option);
+                });
+            }
+
+            function renderFilterButtons() {
+                albumFilters.innerHTML = '<button class="filter-btn active" data-filter="all">Toate pozele</button>';
+                albums.forEach(album => {
+                    const btn = document.createElement("button");
+                    btn.className = "filter-btn";
+                    btn.dataset.filter = album.id;
+                    btn.textContent = album.title;
+                    albumFilters.appendChild(btn);
+                });
+            }
+
+            albumForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const title = albumTitleInput.value.trim();
+                const desc = albumDescInput.value.trim();
+                if (title) {
+                    const albumId = "album-" + Date.now();
+                    albums.push({ id: albumId, title, desc });
+                    updateAlbumSelect();
+                    renderFilterButtons();
+                    albumTitleInput.value = "";
+                    albumDescInput.value = "";
+                }
+            });
+
+            photoForm.addEventListener("submit", (e) => {
+                e.preventDefault();
+                const albumId = photoAlbumSelect.value;
+                const files = photoInput.files;
+
+                if (albumId && files.length > 0) {
+                    Array.from(files).forEach(file => {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            photos.push({
+                                id: "photo-" + Date.now() + Math.random(),
+                                albumId: albumId,
+                                src: event.target.result
+                            });
+                            renderPhotos("all");
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                    photoInput.value = "";
+                }
+            });
+
+            function renderPhotos(filter = "all") {
+                photoGrid.innerHTML = "";
+                const filteredPhotos = filter === "all" ? photos : photos.filter(p => p.albumId === filter);
+
+                if (filteredPhotos.length === 0) {
+                    photoGrid.innerHTML = '<div class="empty-state">Nu există fotografii în acest album.</div>';
+                    return;
+                }
+
+                filteredPhotos.forEach(photo => {
+                    const album = albums.find(a => a.id === photo.albumId);
+                    const card = document.createElement("div");
+                    card.className = "photo-card";
+                    card.innerHTML = `
+                        <img src="${photo.src}" alt="Foto">
+                        <div class="album-badge">${album ? album.title : 'General'}</div>
+                    `;
+
+                    card.addEventListener("click", () => {
+                        lightboxImg.src = photo.src;
+                        lightboxCaption.textContent = album ? `Album: ${album.title}` : "";
+                        lightbox.style.display = "flex";
+                    });
+
+                    photoGrid.appendChild(card);
+                });
+            }
+
+            albumFilters.addEventListener("click", (e) => {
+                if (e.target.classList.contains("filter-btn")) {
+                    document.querySelectorAll(".filter-btn").forEach(btn => btn.classList.remove("active"));
+                    e.target.classList.add("active");
+
+                    const filterValue = e.target.dataset.filter;
+                    const albumObj = albums.find(a => a.id === filterValue);
+                    galleryTitle.textContent = filterValue === "all" ? "Toate Fotografiile" : `Album: ${albumObj.title}`;
+
+                    renderPhotos(filterValue);
+                }
+            });
+
+            closeBtn.addEventListener("click", () => lightbox.style.display = "none");
+            lightbox.addEventListener("click", (e) => { if (e.target === lightbox) lightbox.style.display = "none"; });
+
+            updateAlbumSelect();
+            renderFilterButtons();
+            renderPhotos();
+        });
+    </script>
+</body>
+</html>
