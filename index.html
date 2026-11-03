@@ -349,11 +349,21 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const albums = [{ id: "album-demo", title: "Vacanță la Mare", desc: "Poze de test" }];
-            const photos = [
-                { id: "p1", albumId: "album-demo", src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600" },
-                { id: "p2", albumId: "album-demo", src: "https://images.unsplash.com/photo-1519046904884-53103b34b206?w=600" }
+            const initialAlbums = [{ id: "album-capturi", title: "Capturi Ecran", desc: "Capturi din proiect" }];
+            const initialPhotos = [
+                { id: "p1", albumId: "album-capturi", src: "imagini/1.png" },
+                { id: "p2", albumId: "album-capturi", src: "imagini/2.png" },
+                { id: "p3", albumId: "album-capturi", src: "imagini/3.png" },
+                { id: "p4", albumId: "album-capturi", src: "imagini/4.png" }
             ];
+
+            let albums = JSON.parse(localStorage.getItem("app_albums")) || initialAlbums;
+            let photos = JSON.parse(localStorage.getItem("app_photos")) || initialPhotos;
+
+            function saveData() {
+                localStorage.setItem("app_albums", JSON.stringify(albums));
+                localStorage.setItem("app_photos", JSON.stringify(photos));
+            }
 
             const albumForm = document.getElementById("albumForm");
             const photoForm = document.getElementById("photoForm");
@@ -381,10 +391,12 @@
             }
 
             function renderFilterButtons() {
-                albumFilters.innerHTML = '<button class="filter-btn active" data-filter="all">Toate pozele</button>';
+                const currentActive = document.querySelector(".filter-btn.active")?.dataset.filter || "all";
+                albumFilters.innerHTML = '<button class="filter-btn' + (currentActive === "all" ? " active" : "") + '" data-filter="all">Toate pozele</button>';
+                
                 albums.forEach(album => {
                     const btn = document.createElement("button");
-                    btn.className = "filter-btn";
+                    btn.className = "filter-btn" + (currentActive === album.id ? " active" : "");
                     btn.dataset.filter = album.id;
                     btn.textContent = album.title;
                     albumFilters.appendChild(btn);
@@ -398,6 +410,7 @@
                 if (title) {
                     const albumId = "album-" + Date.now();
                     albums.push({ id: albumId, title, desc });
+                    saveData();
                     updateAlbumSelect();
                     renderFilterButtons();
                     albumTitleInput.value = "";
@@ -411,6 +424,7 @@
                 const files = photoInput.files;
 
                 if (albumId && files.length > 0) {
+                    let filesProcessed = 0;
                     Array.from(files).forEach(file => {
                         const reader = new FileReader();
                         reader.onload = function(event) {
@@ -419,7 +433,12 @@
                                 albumId: albumId,
                                 src: event.target.result
                             });
-                            renderPhotos("all");
+                            filesProcessed++;
+                            if (filesProcessed === files.length) {
+                                saveData();
+                                const activeFilter = document.querySelector(".filter-btn.active")?.dataset.filter || "all";
+                                renderPhotos(activeFilter);
+                            }
                         };
                         reader.readAsDataURL(file);
                     });
